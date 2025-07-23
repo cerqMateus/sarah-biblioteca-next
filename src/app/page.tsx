@@ -1,4 +1,4 @@
-import TopBar from "./components/TopBar.jsx";
+import TopBar from "../components/TopBar.jsx";
 import RedirectButtons from "./components/RedirectButtons.jsx";
 import Image from "next/image.js";
 
