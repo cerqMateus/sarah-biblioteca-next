@@ -1,5 +1,5 @@
 import TopBar from "@/components/TopBar";
-import SideBar from "./components/SideBar";
+import SideBar from "../components/SideBar";
 import NovaReservaDialog from "./components/NovaReservaDialog";
 import ReservaSidebarContent from "./components/ReservaSidebarContent";
 import ReservaFormContent from "./components/ReservaFormContent";

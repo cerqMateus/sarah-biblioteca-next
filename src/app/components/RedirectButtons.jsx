@@ -17,7 +17,7 @@ const RedirectButtons = () => {
       <Button
         className="w-50 h-15 text-xl cursor-pointer"
         variant="outline"
-        onClick={() => router.push("/consultar")}
+        onClick={() => redirect("/consultas")}
       >
         Consultar
       </Button>
