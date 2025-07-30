@@ -9,39 +9,59 @@ datasource db {
 }
 
 model User{
-  matricula        Int   @id @default(autoincrement()) @unique 
-  name      String
-  sector    String
-  Reservation Reservation[]
+  matricula   Int    @id @default(autoincrement()) @unique 
+  name        String
+  sector      String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  reservations Reservation[]
+  ramal       String
 }
 
 model Room{
-  id        Int    @id @default(autoincrement()) @unique
-  name      String
-  capacity  Int
-  resources RoomResource[]
-  isAvailable Boolean @default(true)
-  Reservation Reservation[]
+  id          Int      @id @default(autoincrement()) @unique
+  name        String   @unique
+  capacity    Int
+  isAvailable Boolean  @default(true)
+  resources   RoomResource[]
+  reservations Reservation[]
+
+  @@index([isAvailable])
 }
 
 model RoomResource {
-  id        Int    @id @default(autoincrement()) @unique
+  id        Int      @id @default(autoincrement()) @unique
   name      String
   type      String
   roomId    Int
-  room      Room   @relation(fields: [roomId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  room      Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@index([roomId])
 }
 
 model Reservation {
   id        Int      @id @default(autoincrement()) @unique
   userId    Int
   roomId    Int
-  startDate DateTime
-  endDate   DateTime
-  startTime DateTime
-  endTime   DateTime
-  user      User     @relation(fields: [userId], references: [matricula])
-  room      Room     @relation(fields: [roomId], references: [id])
+  startDateTime DateTime
+  endDateTime   DateTime
+  status    ReservationStatus @default(ACTIVE)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [matricula], onDelete: Cascade)
+  room      Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@index([roomId, startDateTime, endDateTime])
+  @@index([userId])
+  @@index([startDateTime, endDateTime])
+}
+
+enum ReservationStatus {
+  ACTIVE
+  CANCELLED
+  COMPLETED
 }
 
 
