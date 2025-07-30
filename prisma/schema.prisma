@@ -1,0 +1,47 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User{
+  matricula        Int   @id @default(autoincrement()) @unique 
+  name      String
+  sector    String
+  Reservation Reservation[]
+}
+
+model Room{
+  id        Int    @id @default(autoincrement()) @unique
+  name      String
+  capacity  Int
+  resources RoomResource[]
+  isAvailable Boolean @default(true)
+  Reservation Reservation[]
+}
+
+model RoomResource {
+  id        Int    @id @default(autoincrement()) @unique
+  name      String
+  type      String
+  roomId    Int
+  room      Room   @relation(fields: [roomId], references: [id])
+}
+
+model Reservation {
+  id        Int      @id @default(autoincrement()) @unique
+  userId    Int
+  roomId    Int
+  startDate DateTime
+  endDate   DateTime
+  startTime DateTime
+  endTime   DateTime
+  user      User     @relation(fields: [userId], references: [matricula])
+  room      Room     @relation(fields: [roomId], references: [id])
+}
+
+
