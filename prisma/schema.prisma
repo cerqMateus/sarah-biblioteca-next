@@ -23,6 +23,8 @@ model Room{
   name        String   @unique
   capacity    Int
   isAvailable Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
   resources   RoomResource[]
   reservations Reservation[]
 
