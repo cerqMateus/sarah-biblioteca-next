@@ -1,13 +1,11 @@
 "use client";
 
-import { useReservas } from "@/hooks/useReservas";
-import { useAuth } from "@/contexts/AuthContext";
+import { useReservasContext } from "@/contexts/ReservasContext";
 import ReservaCard from "./ReservaCard";
 import { useMemo } from "react";
 
 const MinhasReservas = () => {
-  const { user } = useAuth();
-  const { reservas, loading, error } = useReservas(user?.matricula);
+  const { reservas, loading, error } = useReservasContext();
 
   // As reservas já vêm filtradas da API, então não precisamos filtrar aqui
   const minhasReservas = reservas;

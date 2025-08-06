@@ -1,8 +1,21 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { useReservas } from "@/hooks/useReservas";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { useReservasContext } from "@/contexts/ReservasContext";
 import { useToast } from "@/components/Toast";
+import { TrashIcon } from "lucide-react";
+import { useState } from "react";
 
 interface ReservaCardProps {
   reserva: {
@@ -23,8 +36,9 @@ interface ReservaCardProps {
 }
 
 const ReservaCard = ({ reserva }: ReservaCardProps) => {
-  const { deleteReserva } = useReservas();
+  const { deleteReserva } = useReservasContext();
   const { addToast } = useToast();
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const formatDateTime = (dateTimeString: string) => {
     const date = new Date(dateTimeString);
@@ -38,14 +52,15 @@ const ReservaCard = ({ reserva }: ReservaCardProps) => {
   };
 
   const handleDelete = async () => {
-    if (confirm("Tem certeza que deseja cancelar esta reserva?")) {
-      try {
-        await deleteReserva(reserva.id.toString());
-        addToast("Reserva cancelada com sucesso!", "success");
-      } catch (error) {
-        console.error("Erro ao cancelar reserva:", error);
-        addToast("Erro ao cancelar reserva. Tente novamente.", "error");
-      }
+    setIsDeleting(true);
+    try {
+      await deleteReserva(reserva.id.toString());
+      addToast("Reserva cancelada com sucesso!", "success");
+    } catch (error) {
+      console.error("Erro ao cancelar reserva:", error);
+      addToast("Erro ao cancelar reserva. Tente novamente.", "error");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -91,14 +106,40 @@ const ReservaCard = ({ reserva }: ReservaCardProps) => {
           </div>
 
           {!isReservaPassed() && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleDelete}
-              className="text-red-600 border-red-200 hover:bg-red-50"
-            >
-              Cancelar
-            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-red-600 border-red-200 hover:bg-red-50"
+                >
+                  <TrashIcon className="w-4 h-4" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Cancelar Reserva</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Tem certeza que deseja cancelar esta reserva?
+                    <br />
+                    <strong>{reserva.room.name}</strong> - {startFormatted.date}{" "}
+                    das {startFormatted.time} às {endFormatted.time}
+                    <br />
+                    Esta ação não pode ser desfeita.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleDelete}
+                    disabled={isDeleting}
+                    className="bg-red-600 hover:bg-red-700"
+                  >
+                    {isDeleting ? "Cancelando..." : "Confirmar"}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           )}
         </div>
       </div>

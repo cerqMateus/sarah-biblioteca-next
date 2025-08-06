@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { z } from "zod";
 import React from "react";
-import { useReservas } from "@/hooks/useReservas";
+import { useReservasContext } from "@/contexts/ReservasContext";
 import { useToast } from "@/components/Toast";
 import { useSalas } from "@/hooks/useSalas";
 import { useAuth } from "@/contexts/AuthContext";
@@ -31,7 +31,7 @@ type FormData = z.infer<typeof reservaSchema>;
 type FormErrors = Partial<Record<keyof FormData, string>>;
 
 const NovaReservaDialog = () => {
-  const { createReserva } = useReservas();
+  const { createReserva } = useReservasContext();
   const { salas, loading: salasLoading } = useSalas();
   const { user } = useAuth(); // Usuário logado
   const { addToast } = useToast();

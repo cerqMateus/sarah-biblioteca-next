@@ -67,7 +67,8 @@ export function useReservas(matricula?: number) {
             }
 
             const newReserva = await response.json();
-            setReservas(prev => [...prev, newReserva]);
+            // Recarregar todas as reservas para garantir que a lista esteja atualizada
+            await fetchReservas();
             return newReserva;
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Erro desconhecido');
@@ -90,7 +91,8 @@ export function useReservas(matricula?: number) {
                 throw new Error(errorData.error || 'Erro ao cancelar reserva');
             }
 
-            setReservas(prev => prev.filter(reserva => reserva.id.toString() !== id));
+            // Recarregar todas as reservas para garantir que a lista esteja atualizada
+            await fetchReservas();
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Erro desconhecido');
             throw err;
