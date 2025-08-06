@@ -2,7 +2,7 @@ import TopBar from "@/components/TopBar";
 import SideBar from "../components/SideBar";
 import NovaReservaDialog from "./components/NovaReservaDialog";
 import ReservaSidebarContent from "./components/ReservaSidebarContent";
-import ReservaFormContent from "./components/ReservaFormContent";
+import MinhasReservas from "./components/MinhasReservas";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
 const ReservePage = () => {
@@ -16,7 +16,7 @@ const ReservePage = () => {
               <ReservaSidebarContent />
             </SideBar>
           </div>
-          <ReservaFormContent />
+          <MinhasReservas />
         </div>
       </div>
     </ProtectedRoute>

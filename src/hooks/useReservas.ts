@@ -15,7 +15,7 @@ export interface Reserva {
     };
 }
 
-export function useReservas() {
+export function useReservas(matricula?: number) {
     const [reservas, setReservas] = useState<Reserva[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -24,7 +24,11 @@ export function useReservas() {
         setLoading(true);
         setError(null);
         try {
-            const response = await fetch('/api/reservas');
+            const url = matricula
+                ? `/api/reservas?matricula=${matricula}`
+                : '/api/reservas';
+
+            const response = await fetch(url);
             if (!response.ok) {
                 throw new Error('Erro ao carregar reservas');
             }
@@ -73,6 +77,28 @@ export function useReservas() {
         }
     };
 
+    const deleteReserva = async (id: string) => {
+        setLoading(true);
+        setError(null);
+        try {
+            const response = await fetch(`/api/reservas/${id}`, {
+                method: 'DELETE',
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Erro ao cancelar reserva');
+            }
+
+            setReservas(prev => prev.filter(reserva => reserva.id.toString() !== id));
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Erro desconhecido');
+            throw err;
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
         fetchReservas();
     }, []);
@@ -83,5 +109,6 @@ export function useReservas() {
         error,
         fetchReservas,
         createReserva,
+        deleteReserva,
     };
 }

@@ -126,9 +126,24 @@ export async function POST(request: NextRequest) {
     }
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
     try {
+        const { searchParams } = new URL(request.url);
+        const matricula = searchParams.get('matricula');
+
+        let whereClause = {};
+
+        // Se foi fornecida uma matrícula, filtrar por usuário
+        if (matricula) {
+            whereClause = {
+                user: {
+                    matricula: parseInt(matricula)
+                }
+            };
+        }
+
         const reservations = await prisma.reservation.findMany({
+            where: whereClause,
             include: {
                 user: true,
                 room: true,
