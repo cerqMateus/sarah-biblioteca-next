@@ -8,18 +8,19 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { z } from "zod";
 import React from "react";
 import { useReservas } from "@/hooks/useReservas";
 import { useToast } from "@/components/Toast";
 import { useSalas } from "@/hooks/useSalas";
+import { useUsuario } from "@/hooks/useUsuario";
 import SalaInfo from "./SalaInfo";
 
 const reservaSchema = z.object({
-  nome: z.string().min(1, "Nome obrigatório"),
+  nome: z.string().optional(), // Será preenchido automaticamente
   matricula: z.string().min(1, "Matrícula obrigatória"),
-  ramal: z.string().min(1, "Ramal obrigatório"),
+  ramal: z.string().optional(), // Será preenchido automaticamente
   local: z.string().min(1, "Local obrigatório"),
   data: z.string().min(1, "Data obrigatória"),
   horaInicio: z.string().min(1, "Hora de início obrigatória"),
@@ -32,6 +33,13 @@ type FormErrors = Partial<Record<keyof FormData, string>>;
 const NovaReservaDialog = () => {
   const { createReserva } = useReservas();
   const { salas, loading: salasLoading } = useSalas();
+  const {
+    usuario,
+    loading: usuarioLoading,
+    error: usuarioError,
+    buscarUsuario,
+    limparUsuario,
+  } = useUsuario();
   const { addToast } = useToast();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -49,12 +57,44 @@ const NovaReservaDialog = () => {
   function handleChange(
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setForm({ ...form, [name]: value });
+
+    // Se for matrícula, buscar usuário automaticamente
+    if (name === "matricula") {
+      if (value.length >= 3) {
+        // Buscar apenas quando tiver pelo menos 3 dígitos
+        buscarUsuario(value);
+      } else {
+        limparUsuario();
+      }
+    }
   }
+
+  // Atualizar form quando usuário for encontrado
+  useEffect(() => {
+    if (usuario) {
+      setForm((prev) => ({
+        ...prev,
+        nome: usuario.name,
+        ramal: usuario.ramal,
+      }));
+      setErrors((prev) => ({ ...prev, matricula: undefined }));
+    }
+  }, [usuario]);
 
   async function handleConfirm(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setLoading(true);
+
+    // Validação customizada para usuário
+    if (!usuario) {
+      setErrors({
+        matricula: "Usuário não encontrado. Verifique a matrícula.",
+      });
+      setLoading(false);
+      return;
+    }
 
     const result = reservaSchema.safeParse(form);
     if (!result.success) {
@@ -91,6 +131,7 @@ const NovaReservaDialog = () => {
         horaInicio: "",
         horaFim: "",
       });
+      limparUsuario();
 
       // Notificação de sucesso
       addToast("Reserva criada com sucesso!", "success");
@@ -123,8 +164,9 @@ const NovaReservaDialog = () => {
             <input
               name="nome"
               value={form.nome}
-              onChange={handleChange}
-              className="w-full border rounded px-3 py-2"
+              readOnly
+              className="w-full border rounded px-3 py-2 bg-gray-50 text-gray-700"
+              placeholder="Nome será preenchido automaticamente"
             />
             {errors.nome && (
               <span className="text-xs text-red-500">{errors.nome}</span>
@@ -137,9 +179,16 @@ const NovaReservaDialog = () => {
               value={form.matricula}
               onChange={handleChange}
               className="w-full border rounded px-3 py-2"
+              placeholder="Digite a matrícula do usuário"
             />
             {errors.matricula && (
               <span className="text-xs text-red-500">{errors.matricula}</span>
+            )}
+            {usuarioLoading && (
+              <span className="text-xs text-blue-500">Buscando usuário...</span>
+            )}
+            {usuarioError && (
+              <span className="text-xs text-red-500">{usuarioError}</span>
             )}
           </div>
           <div>
@@ -147,8 +196,9 @@ const NovaReservaDialog = () => {
             <input
               name="ramal"
               value={form.ramal}
-              onChange={handleChange}
-              className="w-full border rounded px-3 py-2"
+              readOnly
+              className="w-full border rounded px-3 py-2 bg-gray-50 text-gray-700"
+              placeholder="Ramal será preenchido automaticamente"
             />
             {errors.ramal && (
               <span className="text-xs text-red-500">{errors.ramal}</span>

@@ -20,20 +20,16 @@ export async function POST(request: NextRequest) {
         const body = await request.json();
         const validatedData = createReservaSchema.parse(body);
 
-        // Criar ou encontrar o usuário
-        let user = await prisma.user.findUnique({
+        // Buscar o usuário (não criar novo)
+        const user = await prisma.user.findUnique({
             where: { matricula: parseInt(validatedData.matricula) }
         });
 
         if (!user) {
-            user = await prisma.user.create({
-                data: {
-                    matricula: parseInt(validatedData.matricula),
-                    name: validatedData.nome,
-                    ramal: validatedData.ramal,
-                    sector: "N/A", // Valor padrão se não fornecido
-                }
-            });
+            return NextResponse.json(
+                { error: "Usuário não encontrado. Verifique a matrícula informada." },
+                { status: 400 }
+            );
         }
 
         // Encontrar a sala (não criar nova)

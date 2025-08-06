@@ -38,9 +38,9 @@ export function useReservas() {
     };
 
     const createReserva = async (data: {
-        nome: string;
+        nome?: string;
         matricula: string;
-        ramal: string;
+        ramal?: string;
         local: string;
         data: string;
         horaInicio: string;
