@@ -62,7 +62,6 @@ const LoginPage = () => {
                 value={matricula}
                 onChange={(e) => setMatricula(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary focus:border-primary"
-                placeholder="Ex: 20221301"
                 disabled={isLoading}
               />
             </div>

@@ -14,18 +14,23 @@ import React from "react";
 import { useReservas } from "@/hooks/useReservas";
 import { useToast } from "@/components/Toast";
 import { useSalas } from "@/hooks/useSalas";
-import { useUsuario } from "@/hooks/useUsuario";
+import { useAuth } from "@/contexts/AuthContext";
 import SalaInfo from "./SalaInfo";
 
 const reservaSchema = z.object({
-  nome: z.string().optional(), // Será preenchido automaticamente
-  matricula: z.string().min(1, "Matrícula obrigatória"),
-  ramal: z.string().optional(), // Será preenchido automaticamente
   local: z.string().min(1, "Local obrigatório"),
   data: z.string().min(1, "Data obrigatória"),
   horaInicio: z.string().min(1, "Hora de início obrigatória"),
   horaFim: z.string().min(1, "Hora de fim obrigatória"),
+  finalidade: z.string().min(1, "Finalidade obrigatória"),
 });
+
+// Interface estendida para incluir campos de exibição
+interface FormDataDisplay extends z.infer<typeof reservaSchema> {
+  nome: string;
+  matricula: string;
+  ramal: string;
+}
 
 type FormData = z.infer<typeof reservaSchema>;
 type FormErrors = Partial<Record<keyof FormData, string>>;
@@ -33,17 +38,18 @@ type FormErrors = Partial<Record<keyof FormData, string>>;
 const NovaReservaDialog = () => {
   const { createReserva } = useReservas();
   const { salas, loading: salasLoading } = useSalas();
-  const {
-    usuario,
-    loading: usuarioLoading,
-    error: usuarioError,
-    buscarUsuario,
-    limparUsuario,
-  } = useUsuario();
+  const { user } = useAuth(); // Usuário logado
   const { addToast } = useToast();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState<FormData>({
+    local: "",
+    data: "",
+    horaInicio: "",
+    horaFim: "",
+    finalidade: "",
+  });
+  const [displayData, setDisplayData] = useState<FormDataDisplay>({
     nome: "",
     matricula: "",
     ramal: "",
@@ -51,22 +57,44 @@ const NovaReservaDialog = () => {
     data: "",
     horaInicio: "",
     horaFim: "",
+    finalidade: "",
   });
   const [errors, setErrors] = useState<FormErrors>({});
+
+  // Atualizar dados de exibição quando usuário mudar
+  useEffect(() => {
+    if (user) {
+      setDisplayData((prev) => ({
+        ...prev,
+        nome: user.name || "",
+        matricula: user.matricula?.toString() || "",
+        ramal: user.ramal || "",
+      }));
+    }
+  }, [user]);
 
   // Função para resetar o formulário
   function resetForm() {
     setForm({
-      nome: "",
-      matricula: "",
-      ramal: "",
       local: "",
       data: "",
       horaInicio: "",
       horaFim: "",
+      finalidade: "",
     });
+    if (user) {
+      setDisplayData({
+        nome: user.name || "",
+        matricula: user.matricula?.toString() || "",
+        ramal: user.ramal || "",
+        local: "",
+        data: "",
+        horaInicio: "",
+        horaFim: "",
+        finalidade: "",
+      });
+    }
     setErrors({});
-    limparUsuario();
     setLoading(false);
   }
 
@@ -82,43 +110,19 @@ const NovaReservaDialog = () => {
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) {
     const { name, value } = e.target;
-    setForm({ ...form, [name]: value });
 
-    // Se for matrícula, buscar usuário automaticamente
-    if (name === "matricula") {
-      if (value.length >= 3) {
-        // Buscar apenas quando tiver pelo menos 3 dígitos
-        buscarUsuario(value);
-      } else {
-        limparUsuario();
-      }
+    // Atualizar dados do formulário principal
+    if (name in form) {
+      setForm({ ...form, [name]: value });
     }
+
+    // Atualizar dados de exibição
+    setDisplayData({ ...displayData, [name]: value });
   }
-
-  // Atualizar form quando usuário for encontrado
-  useEffect(() => {
-    if (usuario) {
-      setForm((prev) => ({
-        ...prev,
-        nome: usuario.name,
-        ramal: usuario.ramal,
-      }));
-      setErrors((prev) => ({ ...prev, matricula: undefined }));
-    }
-  }, [usuario]);
 
   async function handleConfirm(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setLoading(true);
-
-    // Validação customizada para usuário
-    if (!usuario) {
-      setErrors({
-        matricula: "Usuário não encontrado. Verifique a matrícula.",
-      });
-      setLoading(false);
-      return;
-    }
 
     const result = reservaSchema.safeParse(form);
     if (!result.success) {
@@ -141,7 +145,6 @@ const NovaReservaDialog = () => {
 
     // Validação de data não pode ser anterior a hoje
     const hoje = new Date();
-    const dataReserva = new Date(form.data);
     const hojeStr = hoje.toISOString().split("T")[0]; // Formato YYYY-MM-DD
 
     if (form.data < hojeStr) {
@@ -153,7 +156,15 @@ const NovaReservaDialog = () => {
     setErrors({});
 
     try {
-      await createReserva(form);
+      // Criar reserva com dados do usuário logado
+      const reservaData = {
+        ...form,
+        nome: user?.name || "",
+        matricula: user?.matricula?.toString() || "",
+        ramal: user?.ramal || "",
+      };
+
+      await createReserva(reservaData);
 
       // Sucesso - fechar dialog (resetForm será chamado automaticamente pelo handleOpenChange)
       setOpen(false);
@@ -188,52 +199,40 @@ const NovaReservaDialog = () => {
             <label className="block text-sm font-medium mb-1">Nome</label>
             <input
               name="nome"
-              value={form.nome}
+              value={displayData.nome}
               readOnly
               className="w-full border rounded px-3 py-2 bg-gray-50 text-gray-700"
               placeholder="Nome será preenchido automaticamente"
             />
-            {errors.nome && (
-              <span className="text-xs text-red-500">{errors.nome}</span>
-            )}
           </div>
+
           <div>
             <label className="block text-sm font-medium mb-1">Matrícula</label>
             <input
               name="matricula"
-              value={form.matricula}
-              onChange={handleChange}
-              className="w-full border rounded px-3 py-2"
-              placeholder="Digite a matrícula do usuário"
+              value={displayData.matricula}
+              readOnly
+              className="w-full border rounded px-3 py-2 bg-gray-50 text-gray-700"
+              placeholder="Matrícula será preenchida automaticamente"
             />
-            {errors.matricula && (
-              <span className="text-xs text-red-500">{errors.matricula}</span>
-            )}
-            {usuarioLoading && (
-              <span className="text-xs text-blue-500">Buscando usuário...</span>
-            )}
-            {usuarioError && (
-              <span className="text-xs text-red-500">{usuarioError}</span>
-            )}
           </div>
+
           <div>
             <label className="block text-sm font-medium mb-1">Ramal</label>
             <input
               name="ramal"
-              value={form.ramal}
+              value={displayData.ramal}
               readOnly
               className="w-full border rounded px-3 py-2 bg-gray-50 text-gray-700"
               placeholder="Ramal será preenchido automaticamente"
             />
-            {errors.ramal && (
-              <span className="text-xs text-red-500">{errors.ramal}</span>
-            )}
           </div>
+
           <div>
             <label className="block text-sm font-medium mb-1">Local</label>
             <select
               name="local"
-              value={form.local}
+              value={displayData.local}
               onChange={handleChange}
               className="w-full border rounded px-3 py-2 bg-white"
               disabled={salasLoading}
@@ -251,14 +250,13 @@ const NovaReservaDialog = () => {
             {salasLoading && (
               <span className="text-xs text-gray-500">Carregando salas...</span>
             )}
-            <SalaInfo salaNome={form.local} />
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Data</label>
             <input
               type="date"
               name="data"
-              value={form.data}
+              value={displayData.data}
               onChange={handleChange}
               min={new Date().toISOString().split("T")[0]}
               className="w-full border rounded px-3 py-2"
@@ -275,7 +273,7 @@ const NovaReservaDialog = () => {
               <input
                 type="time"
                 name="horaInicio"
-                value={form.horaInicio}
+                value={displayData.horaInicio}
                 onChange={handleChange}
                 className="w-full border rounded px-3 py-2"
               />
@@ -292,7 +290,7 @@ const NovaReservaDialog = () => {
               <input
                 type="time"
                 name="horaFim"
-                value={form.horaFim}
+                value={displayData.horaFim}
                 onChange={handleChange}
                 className="w-full border rounded px-3 py-2"
               />
@@ -301,6 +299,20 @@ const NovaReservaDialog = () => {
               )}
             </div>
           </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">Finalidade</label>
+            <input
+              type="text"
+              name="finalidade"
+              value={displayData.finalidade}
+              onChange={handleChange}
+              className="w-full border rounded px-3 py-2"
+              placeholder="Descrição da finalidade da reserva"
+              required
+            />
+          </div>
+
           <Button type="submit" className="mt-2" disabled={loading}>
             {loading ? "Criando..." : "Confirmar"}
           </Button>
