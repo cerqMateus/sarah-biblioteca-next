@@ -48,6 +48,33 @@ const NovaReservaDialog = () => {
   });
   const [errors, setErrors] = useState<FormErrors>({});
 
+  // Função para gerar horários de 15 em 15 minutos
+  const generateTimeOptions = () => {
+    const times: string[] = [];
+    for (let hour = 7; hour <= 22; hour++) {
+      for (let minute = 0; minute < 60; minute += 15) {
+        const timeString = `${hour.toString().padStart(2, "0")}:${minute
+          .toString()
+          .padStart(2, "0")}`;
+        times.push(timeString);
+      }
+    }
+    return times;
+  };
+
+  const timeOptions = generateTimeOptions();
+
+  // Filtrar opções de hora fim baseadas na hora início
+  const getEndTimeOptions = () => {
+    if (!form.horaInicio) return timeOptions;
+
+    const startTimeIndex = timeOptions.indexOf(form.horaInicio);
+    if (startTimeIndex === -1) return timeOptions;
+
+    // Retornar apenas horários posteriores ao horário de início
+    return timeOptions.slice(startTimeIndex + 1);
+  };
+
   // Função para resetar o formulário
   function resetForm() {
     setForm({
@@ -87,7 +114,26 @@ const NovaReservaDialog = () => {
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) {
     const { name, value } = e.target;
-    setForm({ ...form, [name]: value });
+
+    // Se mudou a hora de início, limpar a hora de fim se ela for inválida
+    if (name === "horaInicio") {
+      const newForm = { ...form, [name]: value };
+
+      // Se já tem hora fim selecionada, verificar se ainda é válida
+      if (form.horaFim && value) {
+        const startIndex = timeOptions.indexOf(value);
+        const endIndex = timeOptions.indexOf(form.horaFim);
+
+        // Se hora fim não é posterior à nova hora início, limpar
+        if (endIndex <= startIndex) {
+          newForm.horaFim = "";
+        }
+      }
+
+      setForm(newForm);
+    } else {
+      setForm({ ...form, [name]: value });
+    }
   }
 
   async function handleConfirm(e: React.FormEvent<HTMLFormElement>) {
@@ -253,13 +299,19 @@ const NovaReservaDialog = () => {
               <label className="block text-sm font-medium mb-1">
                 Hora de Início
               </label>
-              <input
-                type="time"
+              <select
                 name="horaInicio"
                 value={form.horaInicio}
                 onChange={handleChange}
-                className="w-full border rounded px-3 py-2"
-              />
+                className="w-full border rounded px-3 py-2 bg-white"
+              >
+                <option value="">Selecione o horário</option>
+                {timeOptions.map((time) => (
+                  <option key={time} value={time}>
+                    {time}
+                  </option>
+                ))}
+              </select>
               {errors.horaInicio && (
                 <span className="text-xs text-red-500">
                   {errors.horaInicio}
@@ -270,13 +322,24 @@ const NovaReservaDialog = () => {
               <label className="block text-sm font-medium mb-1">
                 Hora de Fim
               </label>
-              <input
-                type="time"
+              <select
                 name="horaFim"
                 value={form.horaFim}
                 onChange={handleChange}
-                className="w-full border rounded px-3 py-2"
-              />
+                className="w-full border rounded px-3 py-2 bg-white"
+                disabled={!form.horaInicio}
+              >
+                <option value="">
+                  {!form.horaInicio
+                    ? "Selecione primeiro a hora de início"
+                    : "Selecione o horário"}
+                </option>
+                {getEndTimeOptions().map((time) => (
+                  <option key={time} value={time}>
+                    {time}
+                  </option>
+                ))}
+              </select>
               {errors.horaFim && (
                 <span className="text-xs text-red-500">{errors.horaFim}</span>
               )}
