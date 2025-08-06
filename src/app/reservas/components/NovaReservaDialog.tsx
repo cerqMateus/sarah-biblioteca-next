@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { z } from "zod";
 import React from "react";
+import { useReservas } from "@/hooks/useReservas";
+import { useToast } from "@/components/Toast";
 
 const reservaSchema = z.object({
   nome: z.string().min(1, "Nome obrigatório"),
@@ -18,19 +20,26 @@ const reservaSchema = z.object({
   ramal: z.string().min(1, "Ramal obrigatório"),
   local: z.string().min(1, "Local obrigatório"),
   data: z.string().min(1, "Data obrigatória"),
+  horaInicio: z.string().min(1, "Hora de início obrigatória"),
+  horaFim: z.string().min(1, "Hora de fim obrigatória"),
 });
 
 type FormData = z.infer<typeof reservaSchema>;
 type FormErrors = Partial<Record<keyof FormData, string>>;
 
 const NovaReservaDialog = () => {
+  const { createReserva } = useReservas();
+  const { addToast } = useToast();
   const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [form, setForm] = useState<FormData>({
     nome: "",
     matricula: "",
     ramal: "",
     local: "",
     data: "",
+    horaInicio: "",
+    horaFim: "",
   });
   const [errors, setErrors] = useState<FormErrors>({});
 
@@ -38,8 +47,10 @@ const NovaReservaDialog = () => {
     setForm({ ...form, [e.target.name]: e.target.value });
   }
 
-  function handleConfirm(e: React.FormEvent<HTMLFormElement>) {
+  async function handleConfirm(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    setLoading(true);
+
     const result = reservaSchema.safeParse(form);
     if (!result.success) {
       const fieldErrors: FormErrors = {};
@@ -48,12 +59,48 @@ const NovaReservaDialog = () => {
         fieldErrors[fieldName] = err.message;
       });
       setErrors(fieldErrors);
+      setLoading(false);
       return;
     }
+
+    // Validação adicional de horário
+    if (form.horaInicio >= form.horaFim) {
+      setErrors({ horaFim: "Hora de fim deve ser posterior à hora de início" });
+      setLoading(false);
+      return;
+    }
+
     setErrors({});
-    // Aqui você pode enviar os dados da reserva
-    setOpen(false);
-    setForm({ nome: "", matricula: "", ramal: "", local: "", data: "" });
+
+    try {
+      await createReserva(form);
+
+      // Sucesso - fechar dialog e limpar formulário
+      setOpen(false);
+      setForm({
+        nome: "",
+        matricula: "",
+        ramal: "",
+        local: "",
+        data: "",
+        horaInicio: "",
+        horaFim: "",
+      });
+
+      // Notificação de sucesso
+      addToast("Reserva criada com sucesso!", "success");
+    } catch (error) {
+      console.error("Erro ao enviar reserva:", error);
+      setErrors({
+        local:
+          error instanceof Error
+            ? error.message
+            : "Erro de conexão. Tente novamente.",
+      });
+      addToast("Erro ao criar reserva. Tente novamente.", "error");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -127,8 +174,42 @@ const NovaReservaDialog = () => {
               <span className="text-xs text-red-500">{errors.data}</span>
             )}
           </div>
-          <Button type="submit" className="mt-2">
-            Confirmar
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                Hora de Início
+              </label>
+              <input
+                type="time"
+                name="horaInicio"
+                value={form.horaInicio}
+                onChange={handleChange}
+                className="w-full border rounded px-3 py-2"
+              />
+              {errors.horaInicio && (
+                <span className="text-xs text-red-500">
+                  {errors.horaInicio}
+                </span>
+              )}
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                Hora de Fim
+              </label>
+              <input
+                type="time"
+                name="horaFim"
+                value={form.horaFim}
+                onChange={handleChange}
+                className="w-full border rounded px-3 py-2"
+              />
+              {errors.horaFim && (
+                <span className="text-xs text-red-500">{errors.horaFim}</span>
+              )}
+            </div>
+          </div>
+          <Button type="submit" className="mt-2" disabled={loading}>
+            {loading ? "Criando..." : "Confirmar"}
           </Button>
         </form>
       </DialogContent>
