@@ -1,8 +1,11 @@
 "use client";
 
-import { Bell, User } from "lucide-react";
+import { Bell, User, LogOut } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const TopBar = () => {
+  const { user, logout } = useAuth();
+
   return (
     <div className="w-full h-16 bg-primary flex items-center px-6 text-white font-bold shadow-md">
       <div className="flex w-full h-full">
@@ -19,8 +22,15 @@ const TopBar = () => {
           <User />
           <div className="text-sm">
             <p>Usuário:</p>
-            <p>20221301 - Mateus Cerqueira</p>
+            <p>
+              {user?.matricula} - {user?.name}
+            </p>
           </div>
+          <LogOut
+            className="cursor-pointer hover:text-gray-200"
+            onClick={logout}
+            title="Sair"
+          />
         </div>
       </div>
     </div>
