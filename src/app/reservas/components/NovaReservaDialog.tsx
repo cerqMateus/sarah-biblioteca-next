@@ -13,6 +13,8 @@ import { z } from "zod";
 import React from "react";
 import { useReservas } from "@/hooks/useReservas";
 import { useToast } from "@/components/Toast";
+import { useSalas } from "@/hooks/useSalas";
+import SalaInfo from "./SalaInfo";
 
 const reservaSchema = z.object({
   nome: z.string().min(1, "Nome obrigatório"),
@@ -29,6 +31,7 @@ type FormErrors = Partial<Record<keyof FormData, string>>;
 
 const NovaReservaDialog = () => {
   const { createReserva } = useReservas();
+  const { salas, loading: salasLoading } = useSalas();
   const { addToast } = useToast();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -43,7 +46,9 @@ const NovaReservaDialog = () => {
   });
   const [errors, setErrors] = useState<FormErrors>({});
 
-  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleChange(
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) {
     setForm({ ...form, [e.target.name]: e.target.value });
   }
 
@@ -108,7 +113,7 @@ const NovaReservaDialog = () => {
       <DialogTrigger asChild>
         <Button className="w-full">Criar nova reserva</Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Nova Reserva</DialogTitle>
         </DialogHeader>
@@ -151,15 +156,27 @@ const NovaReservaDialog = () => {
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Local</label>
-            <input
+            <select
               name="local"
               value={form.local}
               onChange={handleChange}
-              className="w-full border rounded px-3 py-2"
-            />
+              className="w-full border rounded px-3 py-2 bg-white"
+              disabled={salasLoading}
+            >
+              <option value="">Selecione uma sala</option>
+              {salas.map((sala) => (
+                <option key={sala.id} value={sala.name}>
+                  {sala.name} (Capacidade: {sala.capacity} pessoas)
+                </option>
+              ))}
+            </select>
             {errors.local && (
               <span className="text-xs text-red-500">{errors.local}</span>
             )}
+            {salasLoading && (
+              <span className="text-xs text-gray-500">Carregando salas...</span>
+            )}
+            <SalaInfo salaNome={form.local} />
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Data</label>

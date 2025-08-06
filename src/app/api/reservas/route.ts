@@ -36,19 +36,19 @@ export async function POST(request: NextRequest) {
             });
         }
 
-        // Encontrar ou criar a sala
-        let room = await prisma.room.findFirst({
-            where: { name: validatedData.local }
+        // Encontrar a sala (não criar nova)
+        const room = await prisma.room.findFirst({
+            where: {
+                name: validatedData.local,
+                isAvailable: true
+            }
         });
 
         if (!room) {
-            room = await prisma.room.create({
-                data: {
-                    name: validatedData.local,
-                    capacity: 10, // Valor padrão
-                    isAvailable: true,
-                }
-            });
+            return NextResponse.json(
+                { error: "Sala não encontrada ou não disponível" },
+                { status: 400 }
+            );
         }
 
         // Criar as datas de início e fim
