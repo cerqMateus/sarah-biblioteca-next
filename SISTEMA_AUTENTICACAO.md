@@ -45,15 +45,26 @@ Sistema de autenticação simples baseado em matrícula do usuário. Controla o 
   - Mostra loading durante verificação
   - Wrapper para páginas protegidas
 
-### 4. **TopBar Atualizada** (`src/components/TopBar.jsx`)
+### 4. **PublicOnlyRoute** (`src/components/PublicOnlyRoute.tsx`)
+
+- **Propósito**: Impede acesso à página de login quando já autenticado
+- **Funcionalidades**:
+  - Verifica se usuário está logado
+  - Redireciona para home se já autenticado
+  - Mostra loading durante verificação
+  - Wrapper para página de login
+
+### 5. **TopBar Atualizada** (`src/components/TopBar.jsx`)
 
 - **Propósito**: Exibe informações dinâmicas do usuário
 - **Funcionalidades**:
   - Mostra matrícula e nome do usuário logado
-  - Botão de logout
+  - **Menu dropdown** ao clicar no ícone de usuário
+  - **Opção "Sair"** no menu para logout seguro
+  - **Fechamento automático** do menu ao clicar fora
   - Dados obtidos do contexto de autenticação
 
-### 5. **API de Usuários** (`src/app/api/usuarios/route.ts`)
+### 6. **API de Usuários** (`src/app/api/usuarios/route.ts`)
 
 - **Propósito**: Endpoint para buscar usuário por matrícula
 - **Endpoint**: `GET /api/usuarios?matricula=XXXXX`
@@ -89,9 +100,13 @@ Sistema de autenticação simples baseado em matrícula do usuário. Controla o 
 
 ### 4. **Logout**
 
-1. Usuário clica no botão de logout na TopBar
-2. Sessão é limpa do localStorage
-3. Redireciona para página de login
+### 4. **Logout**
+
+1. Usuário clica no ícone de usuário na TopBar
+2. Menu dropdown aparece com opção "Sair"
+3. Usuário clica em "Sair" para confirmar
+4. Sessão é limpa do localStorage
+5. Redireciona para página de login
 
 ## Páginas Protegidas
 
@@ -154,8 +169,11 @@ Todas as páginas principais agora são protegidas:
 1. **Login Válido**: Matrícula existente no banco
 2. **Login Inválido**: Matrícula inexistente
 3. **Acesso Direto**: Tentar acessar página protegida sem login
-4. **Logout**: Verificar limpeza de sessão
-5. **Persistência**: Recarregar página e manter sessão
-6. **Navegação**: Transição entre páginas protegidas
+4. **Menu Dropdown**: Clicar no ícone de usuário e verificar menu
+5. **Logout**: Selecionar "Sair" no menu dropdown
+6. **Fechamento do Menu**: Clicar fora do menu para fechá-lo
+7. **Logout**: Verificar limpeza de sessão
+8. **Persistência**: Recarregar página e manter sessão
+9. **Navegação**: Transição entre páginas protegidas
 
 Data da implementação: Janeiro 2025
