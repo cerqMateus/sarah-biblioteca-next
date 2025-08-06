@@ -54,6 +54,30 @@ const NovaReservaDialog = () => {
   });
   const [errors, setErrors] = useState<FormErrors>({});
 
+  // Função para resetar o formulário
+  function resetForm() {
+    setForm({
+      nome: "",
+      matricula: "",
+      ramal: "",
+      local: "",
+      data: "",
+      horaInicio: "",
+      horaFim: "",
+    });
+    setErrors({});
+    limparUsuario();
+    setLoading(false);
+  }
+
+  // Handler para quando o dialog for fechado
+  function handleOpenChange(isOpen: boolean) {
+    setOpen(isOpen);
+    if (!isOpen) {
+      resetForm();
+    }
+  }
+
   function handleChange(
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) {
@@ -120,18 +144,8 @@ const NovaReservaDialog = () => {
     try {
       await createReserva(form);
 
-      // Sucesso - fechar dialog e limpar formulário
+      // Sucesso - fechar dialog (resetForm será chamado automaticamente pelo handleOpenChange)
       setOpen(false);
-      setForm({
-        nome: "",
-        matricula: "",
-        ramal: "",
-        local: "",
-        data: "",
-        horaInicio: "",
-        horaFim: "",
-      });
-      limparUsuario();
 
       // Notificação de sucesso
       addToast("Reserva criada com sucesso!", "success");
@@ -150,7 +164,7 @@ const NovaReservaDialog = () => {
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button className="w-full">Criar nova reserva</Button>
       </DialogTrigger>
