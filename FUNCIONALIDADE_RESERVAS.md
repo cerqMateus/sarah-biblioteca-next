@@ -10,7 +10,6 @@ Sistema de reservas de salas para biblioteca desenvolvido com Next.js, Prisma e 
 - **Validação de Formulário**: Validação completa dos dados usando Zod
 - **Verificação de Conflitos**: Sistema que impede reservas conflitantes
 - **Notificações**: Sistema de toast para feedback ao usuário
-- **Lista de Reservas**: Visualização das reservas ativas na sidebar
 - **API REST**: Endpoints para criação e listagem de reservas
 
 ### 📋 Campos do Formulário de Reserva
@@ -85,7 +84,6 @@ O projeto estará disponível em `http://localhost:3000`
 ### Componentes
 
 - `src/app/reservas/components/NovaReservaDialog.tsx` - Dialog para criar reservas (ATUALIZADO)
-- `src/app/reservas/components/ListaReservas.tsx` - Lista de reservas ativas (NOVO)
 - `src/app/reservas/components/ReservaSidebarContent.tsx` - Conteúdo da sidebar (ATUALIZADO)
 - `src/components/Toast.tsx` - Sistema de notificações (NOVO)
 
@@ -133,11 +131,6 @@ O projeto estará disponível em `http://localhost:3000`
 - Tente criar uma reserva com hora de fim anterior à hora de início
 - Tente criar uma reserva conflitante (mesmo local, data e horário sobreposto)
 
-### 5. Visualizar Reservas
-
-- Todas as reservas ativas são exibidas na sidebar
-- Cada reserva mostra: nome, matrícula, ramal, local, data e horário
-
 ## 🌱 Dados de Exemplo
 
 O comando `npm run db:seed` cria:
@@ -168,7 +161,7 @@ Cria uma nova reserva
 
 ### GET `/api/reservas`
 
-Lista todas as reservas ativas
+Lista todas as reservas
 
 ## 🛠 Tecnologias Utilizadas
 

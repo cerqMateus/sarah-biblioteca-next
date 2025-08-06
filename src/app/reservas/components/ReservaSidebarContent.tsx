@@ -1,5 +1,3 @@
-import ListaReservas from "./ListaReservas";
-
 const ReservaSidebarContent = () => {
   return (
     <div className="space-y-4">
@@ -11,10 +9,6 @@ const ReservaSidebarContent = () => {
           <li>Escolha a data e horário.</li>
           <li>Confirme sua reserva.</li>
         </ul>
-      </div>
-
-      <div className="border-t pt-4">
-        <ListaReservas />
       </div>
     </div>
   );
