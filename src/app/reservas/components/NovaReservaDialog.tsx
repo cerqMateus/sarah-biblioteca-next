@@ -139,6 +139,17 @@ const NovaReservaDialog = () => {
       return;
     }
 
+    // Validação de data não pode ser anterior a hoje
+    const hoje = new Date();
+    const dataReserva = new Date(form.data);
+    const hojeStr = hoje.toISOString().split("T")[0]; // Formato YYYY-MM-DD
+
+    if (form.data < hojeStr) {
+      setErrors({ data: "Data da reserva não pode ser anterior a hoje" });
+      setLoading(false);
+      return;
+    }
+
     setErrors({});
 
     try {
@@ -249,6 +260,7 @@ const NovaReservaDialog = () => {
               name="data"
               value={form.data}
               onChange={handleChange}
+              min={new Date().toISOString().split("T")[0]}
               className="w-full border rounded px-3 py-2"
             />
             {errors.data && (

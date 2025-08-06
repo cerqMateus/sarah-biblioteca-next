@@ -10,7 +10,14 @@ const createReservaSchema = z.object({
     matricula: z.string().min(1, "Matrícula obrigatória"),
     ramal: z.string().min(1, "Ramal obrigatório"),
     local: z.string().min(1, "Local obrigatório"),
-    data: z.string().min(1, "Data obrigatória"),
+    data: z.string()
+        .min(1, "Data obrigatória")
+        .refine((date) => {
+            const reservationDate = new Date(date);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            return reservationDate >= today;
+        }, "A data da reserva não pode ser anterior a hoje"),
     horaInicio: z.string().min(1, "Hora de início obrigatória"),
     horaFim: z.string().min(1, "Hora de fim obrigatória"),
 });
