@@ -18,19 +18,14 @@ import { useAuth } from "@/contexts/AuthContext";
 import SalaInfo from "./SalaInfo";
 
 const reservaSchema = z.object({
+  nome: z.string().optional(),
+  matricula: z.string().optional(),
+  ramal: z.string().optional(),
   local: z.string().min(1, "Local obrigatório"),
   data: z.string().min(1, "Data obrigatória"),
   horaInicio: z.string().min(1, "Hora de início obrigatória"),
   horaFim: z.string().min(1, "Hora de fim obrigatória"),
-  finalidade: z.string().min(1, "Finalidade obrigatória"),
 });
-
-// Interface estendida para incluir campos de exibição
-interface FormDataDisplay extends z.infer<typeof reservaSchema> {
-  nome: string;
-  matricula: string;
-  ramal: string;
-}
 
 type FormData = z.infer<typeof reservaSchema>;
 type FormErrors = Partial<Record<keyof FormData, string>>;
@@ -43,57 +38,27 @@ const NovaReservaDialog = () => {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState<FormData>({
+    nome: user?.name || "",
+    matricula: user?.matricula?.toString() || "",
+    ramal: user?.ramal || "",
     local: "",
     data: "",
     horaInicio: "",
     horaFim: "",
-    finalidade: "",
-  });
-  const [displayData, setDisplayData] = useState<FormDataDisplay>({
-    nome: "",
-    matricula: "",
-    ramal: "",
-    local: "",
-    data: "",
-    horaInicio: "",
-    horaFim: "",
-    finalidade: "",
   });
   const [errors, setErrors] = useState<FormErrors>({});
-
-  // Atualizar dados de exibição quando usuário mudar
-  useEffect(() => {
-    if (user) {
-      setDisplayData((prev) => ({
-        ...prev,
-        nome: user.name || "",
-        matricula: user.matricula?.toString() || "",
-        ramal: user.ramal || "",
-      }));
-    }
-  }, [user]);
 
   // Função para resetar o formulário
   function resetForm() {
     setForm({
+      nome: user?.name || "",
+      matricula: user?.matricula?.toString() || "",
+      ramal: user?.ramal || "",
       local: "",
       data: "",
       horaInicio: "",
       horaFim: "",
-      finalidade: "",
     });
-    if (user) {
-      setDisplayData({
-        nome: user.name || "",
-        matricula: user.matricula?.toString() || "",
-        ramal: user.ramal || "",
-        local: "",
-        data: "",
-        horaInicio: "",
-        horaFim: "",
-        finalidade: "",
-      });
-    }
     setErrors({});
     setLoading(false);
   }
@@ -106,18 +71,23 @@ const NovaReservaDialog = () => {
     }
   }
 
+  // Atualizar formulário quando dados do usuário estiverem disponíveis
+  useEffect(() => {
+    if (user) {
+      setForm((prev) => ({
+        ...prev,
+        nome: user.name || "",
+        matricula: user.matricula?.toString() || "",
+        ramal: user.ramal || "",
+      }));
+    }
+  }, [user]);
+
   function handleChange(
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) {
     const { name, value } = e.target;
-
-    // Atualizar dados do formulário principal
-    if (name in form) {
-      setForm({ ...form, [name]: value });
-    }
-
-    // Atualizar dados de exibição
-    setDisplayData({ ...displayData, [name]: value });
+    setForm({ ...form, [name]: value });
   }
 
   async function handleConfirm(e: React.FormEvent<HTMLFormElement>) {
@@ -156,12 +126,12 @@ const NovaReservaDialog = () => {
     setErrors({});
 
     try {
-      // Criar reserva com dados do usuário logado
+      // Criar reserva com dados do formulário (já contém dados do usuário)
       const reservaData = {
         ...form,
-        nome: user?.name || "",
-        matricula: user?.matricula?.toString() || "",
-        ramal: user?.ramal || "",
+        matricula: form.matricula || user?.matricula?.toString() || "",
+        nome: form.nome || user?.name || "",
+        ramal: form.ramal || user?.ramal || "",
       };
 
       await createReserva(reservaData);
@@ -198,41 +168,53 @@ const NovaReservaDialog = () => {
           <div>
             <label className="block text-sm font-medium mb-1">Nome</label>
             <input
+              type="text"
               name="nome"
-              value={displayData.nome}
-              readOnly
-              className="w-full border rounded px-3 py-2 bg-gray-50 text-gray-700"
-              placeholder="Nome será preenchido automaticamente"
+              value={form.nome}
+              onChange={handleChange}
+              className="w-full border rounded px-3 py-2 bg-gray-100"
+              disabled
             />
+            {errors.nome && (
+              <span className="text-xs text-red-500">{errors.nome}</span>
+            )}
           </div>
 
           <div>
             <label className="block text-sm font-medium mb-1">Matrícula</label>
             <input
+              type="text"
               name="matricula"
-              value={displayData.matricula}
-              readOnly
-              className="w-full border rounded px-3 py-2 bg-gray-50 text-gray-700"
-              placeholder="Matrícula será preenchida automaticamente"
+              value={form.matricula}
+              onChange={handleChange}
+              className="w-full border rounded px-3 py-2 bg-gray-100"
+              disabled
             />
+            {errors.matricula && (
+              <span className="text-xs text-red-500">{errors.matricula}</span>
+            )}
           </div>
 
           <div>
             <label className="block text-sm font-medium mb-1">Ramal</label>
             <input
+              type="text"
               name="ramal"
-              value={displayData.ramal}
-              readOnly
-              className="w-full border rounded px-3 py-2 bg-gray-50 text-gray-700"
-              placeholder="Ramal será preenchido automaticamente"
+              value={form.ramal}
+              onChange={handleChange}
+              className="w-full border rounded px-3 py-2 bg-gray-100"
+              disabled
             />
+            {errors.ramal && (
+              <span className="text-xs text-red-500">{errors.ramal}</span>
+            )}
           </div>
 
           <div>
             <label className="block text-sm font-medium mb-1">Local</label>
             <select
               name="local"
-              value={displayData.local}
+              value={form.local}
               onChange={handleChange}
               className="w-full border rounded px-3 py-2 bg-white"
               disabled={salasLoading}
@@ -250,13 +232,14 @@ const NovaReservaDialog = () => {
             {salasLoading && (
               <span className="text-xs text-gray-500">Carregando salas...</span>
             )}
+            <SalaInfo salaNome={form.local} />
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Data</label>
             <input
               type="date"
               name="data"
-              value={displayData.data}
+              value={form.data}
               onChange={handleChange}
               min={new Date().toISOString().split("T")[0]}
               className="w-full border rounded px-3 py-2"
@@ -273,7 +256,7 @@ const NovaReservaDialog = () => {
               <input
                 type="time"
                 name="horaInicio"
-                value={displayData.horaInicio}
+                value={form.horaInicio}
                 onChange={handleChange}
                 className="w-full border rounded px-3 py-2"
               />
@@ -290,7 +273,7 @@ const NovaReservaDialog = () => {
               <input
                 type="time"
                 name="horaFim"
-                value={displayData.horaFim}
+                value={form.horaFim}
                 onChange={handleChange}
                 className="w-full border rounded px-3 py-2"
               />
@@ -299,20 +282,6 @@ const NovaReservaDialog = () => {
               )}
             </div>
           </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-1">Finalidade</label>
-            <input
-              type="text"
-              name="finalidade"
-              value={displayData.finalidade}
-              onChange={handleChange}
-              className="w-full border rounded px-3 py-2"
-              placeholder="Descrição da finalidade da reserva"
-              required
-            />
-          </div>
-
           <Button type="submit" className="mt-2" disabled={loading}>
             {loading ? "Criando..." : "Confirmar"}
           </Button>
