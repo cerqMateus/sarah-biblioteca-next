@@ -1,9 +1,9 @@
 import TopBar from "@/components/TopBar";
 import SideBar from "../components/SideBar";
-import NovaReservaDialog from "./components/NovaReservaDialog";
 import ReservaSidebarContent from "./components/ReservaSidebarContent";
 import ReservaFormContent from "./components/ReservaFormContent";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import NovaReservaDialog from "./components/NovaReservaDialog";
 
 const ReservePage = () => {
   return (
