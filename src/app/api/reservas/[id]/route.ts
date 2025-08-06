@@ -5,19 +5,18 @@ const prisma = new PrismaClient();
 
 export async function DELETE(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const id = parseInt(params.id);
+        const { id: idParam } = await params;
+        const id = parseInt(idParam);
 
         if (isNaN(id)) {
             return NextResponse.json(
                 { error: 'ID inválido' },
                 { status: 400 }
             );
-        }
-
-        // Verificar se a reserva existe
+        }        // Verificar se a reserva existe
         const reserva = await prisma.reservation.findUnique({
             where: { id },
         });

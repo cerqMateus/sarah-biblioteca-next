@@ -64,32 +64,52 @@ export async function POST(request: NextRequest) {
                 roomId: room.id,
                 status: "ACTIVE",
                 OR: [
+                    // Nova reserva começa durante uma reserva existente
                     {
                         AND: [
                             { startDateTime: { lte: startDateTime } },
                             { endDateTime: { gt: startDateTime } }
                         ]
                     },
+                    // Nova reserva termina durante uma reserva existente
                     {
                         AND: [
                             { startDateTime: { lt: endDateTime } },
                             { endDateTime: { gte: endDateTime } }
                         ]
                     },
+                    // Nova reserva engloba uma reserva existente
                     {
                         AND: [
                             { startDateTime: { gte: startDateTime } },
                             { endDateTime: { lte: endDateTime } }
                         ]
+                    },
+                    // Nova reserva está totalmente dentro de uma reserva existente
+                    {
+                        AND: [
+                            { startDateTime: { lte: startDateTime } },
+                            { endDateTime: { gte: endDateTime } }
+                        ]
                     }
                 ]
+            },
+            include: {
+                user: true
             }
         });
 
         if (conflictingReservation) {
+            const conflictStart = new Date(conflictingReservation.startDateTime).toLocaleTimeString("pt-BR", { hour: '2-digit', minute: '2-digit' });
+            const conflictEnd = new Date(conflictingReservation.endDateTime).toLocaleTimeString("pt-BR", { hour: '2-digit', minute: '2-digit' });
+            const conflictDate = new Date(conflictingReservation.startDateTime).toLocaleDateString("pt-BR");
+
             return NextResponse.json(
-                { error: "Já existe uma reserva neste horário para esta sala" },
-                { status: 400 }
+                {
+                    error: `Conflito de horário! Já existe uma reserva neste período.`,
+                    details: `Reserva existente: ${conflictDate} das ${conflictStart} às ${conflictEnd} - ${conflictingReservation.user.name}`
+                },
+                { status: 409 }
             );
         }
 

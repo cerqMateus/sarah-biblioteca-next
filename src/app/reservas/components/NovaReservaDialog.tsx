@@ -15,6 +15,7 @@ import { useReservasContext } from "@/contexts/ReservasContext";
 import { useToast } from "@/components/Toast";
 import { useSalas } from "@/hooks/useSalas";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAvailabilityCheck } from "@/hooks/useAvailabilityCheck";
 import SalaInfo from "./SalaInfo";
 
 const reservaSchema = z.object({
@@ -35,6 +36,12 @@ const NovaReservaDialog = () => {
   const { salas, loading: salasLoading } = useSalas();
   const { user } = useAuth(); // Usuário logado
   const { addToast } = useToast();
+  const {
+    checkAvailability,
+    clearResult,
+    loading: checkingAvailability,
+    result: availabilityResult,
+  } = useAvailabilityCheck();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState<FormData>({
@@ -95,8 +102,29 @@ const NovaReservaDialog = () => {
     setOpen(isOpen);
     if (!isOpen) {
       resetForm();
+      clearResult();
     }
   }
+
+  // Verificar disponibilidade quando os campos relevantes mudarem
+  useEffect(() => {
+    if (form.local && form.data && form.horaInicio && form.horaFim) {
+      const timeoutId = setTimeout(() => {
+        checkAvailability(form.local, form.data, form.horaInicio, form.horaFim);
+      }, 500); // Debounce de 500ms
+
+      return () => clearTimeout(timeoutId);
+    } else {
+      clearResult();
+    }
+  }, [
+    form.local,
+    form.data,
+    form.horaInicio,
+    form.horaFim,
+    checkAvailability,
+    clearResult,
+  ]);
 
   // Atualizar formulário quando dados do usuário estiverem disponíveis
   useEffect(() => {
@@ -189,11 +217,24 @@ const NovaReservaDialog = () => {
       addToast("Reserva criada com sucesso!", "success");
     } catch (error) {
       console.error("Erro ao enviar reserva:", error);
+
+      let errorMessage = "Erro de conexão. Tente novamente.";
+
+      if (error instanceof Error) {
+        errorMessage = error.message;
+
+        // Se é um erro de conflito (status 409), mostrar no campo de local
+        if (error.message.includes("Conflito de horário")) {
+          setErrors({
+            local: errorMessage,
+          });
+          addToast("Conflito de horário detectado!", "error");
+          return;
+        }
+      }
+
       setErrors({
-        local:
-          error instanceof Error
-            ? error.message
-            : "Erro de conexão. Tente novamente.",
+        local: errorMessage,
       });
       addToast("Erro ao criar reserva. Tente novamente.", "error");
     } finally {
@@ -345,7 +386,67 @@ const NovaReservaDialog = () => {
               )}
             </div>
           </div>
-          <Button type="submit" className="mt-2" disabled={loading}>
+
+          {/* Status de Disponibilidade */}
+          {(checkingAvailability || availabilityResult) && (
+            <div className="mt-4">
+              {checkingAvailability ? (
+                <div className="flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                  <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                  <span className="text-blue-700 text-sm">
+                    Verificando disponibilidade...
+                  </span>
+                </div>
+              ) : (
+                availabilityResult && (
+                  <div
+                    className={`p-3 border rounded-md ${
+                      availabilityResult.available
+                        ? "bg-green-50 border-green-200"
+                        : "bg-red-50 border-red-200"
+                    }`}
+                  >
+                    <div
+                      className={`text-sm font-medium ${
+                        availabilityResult.available
+                          ? "text-green-700"
+                          : "text-red-700"
+                      }`}
+                    >
+                      {availabilityResult.message}
+                    </div>
+
+                    {!availabilityResult.available &&
+                      availabilityResult.conflicts && (
+                        <div className="mt-2 text-xs text-red-600">
+                          <div className="font-medium mb-1">
+                            Conflitos encontrados:
+                          </div>
+                          {availabilityResult.conflicts.map(
+                            (conflict, index) => (
+                              <div key={index} className="ml-2">
+                                • {conflict.startTime} às {conflict.endTime} -{" "}
+                                {conflict.userName}
+                              </div>
+                            )
+                          )}
+                        </div>
+                      )}
+                  </div>
+                )
+              )}
+            </div>
+          )}
+
+          <Button
+            type="submit"
+            className="mt-4"
+            disabled={
+              loading ||
+              checkingAvailability ||
+              (availabilityResult ? !availabilityResult.available : false)
+            }
+          >
             {loading ? "Criando..." : "Confirmar"}
           </Button>
         </form>
