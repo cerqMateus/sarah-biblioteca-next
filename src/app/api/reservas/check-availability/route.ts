@@ -5,6 +5,20 @@ const prisma = new PrismaClient();
 
 export async function GET(request: NextRequest) {
     try {
+        // Executar limpeza de reservas expiradas primeiro
+        const now = new Date();
+        await prisma.reservation.updateMany({
+            where: {
+                endDateTime: {
+                    lt: now
+                },
+                status: 'ACTIVE'
+            },
+            data: {
+                status: 'COMPLETED'
+            }
+        });
+
         const { searchParams } = new URL(request.url);
         const roomName = searchParams.get('room');
         const date = searchParams.get('date');

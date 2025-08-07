@@ -30,6 +30,9 @@ export function useConsultaReservas() {
         setLoading(true);
         setError(null);
         try {
+            // Executar limpeza de reservas expiradas antes de buscar
+            await fetch('/api/reservas/cleanup-expired', { method: 'POST' });
+
             const url = `/api/reservas/consulta?room=${encodeURIComponent(roomName)}`;
             const response = await fetch(url);
 
@@ -45,9 +48,7 @@ export function useConsultaReservas() {
         } finally {
             setLoading(false);
         }
-    }, []);
-
-    const getReservasPorData = useCallback((date: Date) => {
+    }, []); const getReservasPorData = useCallback((date: Date) => {
         if (!date) return [];
 
         const dateStr = date.toISOString().split('T')[0];

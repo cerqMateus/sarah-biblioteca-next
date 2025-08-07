@@ -151,14 +151,14 @@ export async function GET(request: NextRequest) {
         const { searchParams } = new URL(request.url);
         const matricula = searchParams.get('matricula');
 
-        let whereClause = {};
+        let whereClause: any = {
+            status: 'ACTIVE' // Apenas reservas ativas
+        };
 
         // Se foi fornecida uma matrícula, filtrar por usuário
         if (matricula) {
-            whereClause = {
-                user: {
-                    matricula: parseInt(matricula)
-                }
+            whereClause.user = {
+                matricula: parseInt(matricula)
             };
         }
 

@@ -24,6 +24,9 @@ export function useReservas(matricula?: number) {
         setLoading(true);
         setError(null);
         try {
+            // Executar limpeza de reservas expiradas antes de buscar
+            await fetch('/api/reservas/cleanup-expired', { method: 'POST' });
+
             const url = matricula
                 ? `/api/reservas?matricula=${matricula}`
                 : '/api/reservas';
