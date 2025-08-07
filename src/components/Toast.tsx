@@ -61,11 +61,11 @@ function ToastContainer({
   if (toasts.length === 0) return null;
 
   return (
-    <div className="fixed top-4 right-4 z-50 space-y-2">
+    <div className="fixed bottom-4 right-4 z-50 space-y-2">
       {toasts.map((toast) => (
         <div
           key={toast.id}
-          className={`p-4 rounded-lg shadow-lg max-w-sm border-l-4 animate-in slide-in-from-right duration-300 ${
+          className={`p-4 rounded-lg shadow-lg max-w-sm border-l-4 animate-in slide-in-from-bottom duration-300 ${
             toast.type === "success"
               ? "bg-green-50 border-green-500 text-green-800"
               : toast.type === "error"
