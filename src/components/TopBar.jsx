@@ -44,7 +44,6 @@ const TopBar = () => {
           </p>
         </div>
         <div className="flex items-center justify-end gap-4 w-[30%] h-full">
-          <Bell className="cursor-pointer" />
           <div className="relative" ref={menuRef}>
             <User
               className="cursor-pointer hover:text-gray-200"
