@@ -1,7 +1,7 @@
 "use client";
 
 import SideBar from "@/app/components/SideBar";
-import { Calendar } from "@/components/ui/calendar";
+import { SimpleCalendar } from "@/components/ui/simple-calendar";
 import { useConsultaContext } from "@/contexts/ConsultaContext";
 import { useSalas } from "@/hooks/useSalas";
 import { useMemo } from "react";
@@ -77,8 +77,7 @@ const CalendarComponent = () => {
       </div>
 
       {/* Calendário */}
-      <Calendar
-        mode="single"
+      <SimpleCalendar
         selected={selectedDate}
         onSelect={setSelectedDate}
         className="rounded-lg border"
