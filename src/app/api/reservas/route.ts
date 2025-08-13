@@ -58,6 +58,15 @@ export async function POST(request: NextRequest) {
         const startDateTime = new Date(`${validatedData.data}T${validatedData.horaInicio}:00`);
         const endDateTime = new Date(`${validatedData.data}T${validatedData.horaFim}:00`);
 
+        // Validação extra: data e hora de início não pode ser menor que agora
+        const now = new Date();
+        if (startDateTime < now) {
+            return NextResponse.json(
+                { error: "Não é permitido reservar para uma data e hora anterior ao momento atual." },
+                { status: 400 }
+            );
+        }
+
         // Verificar se já existe uma reserva conflitante
         const conflictingReservation = await prisma.reservation.findFirst({
             where: {
