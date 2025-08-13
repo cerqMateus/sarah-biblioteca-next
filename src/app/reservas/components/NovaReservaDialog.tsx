@@ -69,17 +69,24 @@ const NovaReservaDialog = () => {
     return times;
   };
 
-  const timeOptions = generateTimeOptions();
+  // Horários de início até 17:00
+  const maxStartTime = "17:00";
+  const timeOptions = generateTimeOptions().filter(
+    (time) => time <= maxStartTime
+  );
 
   // Filtrar opções de hora fim baseadas na hora início
   const getEndTimeOptions = () => {
-    if (!form.horaInicio) return timeOptions;
+    // Filtrar para horários até 18:00
+    const maxEndTime = "18:00";
+    let filteredOptions = timeOptions.filter((time) => time <= maxEndTime);
+    if (!form.horaInicio) return filteredOptions;
 
-    const startTimeIndex = timeOptions.indexOf(form.horaInicio);
-    if (startTimeIndex === -1) return timeOptions;
+    const startTimeIndex = filteredOptions.indexOf(form.horaInicio);
+    if (startTimeIndex === -1) return filteredOptions;
 
     // Retornar apenas horários posteriores ao horário de início
-    return timeOptions.slice(startTimeIndex + 1);
+    return filteredOptions.slice(startTimeIndex + 1);
   };
 
   // Função para resetar o formulário

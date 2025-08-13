@@ -56,7 +56,14 @@ export async function POST(request: NextRequest) {
 
         // Criar as datas de início e fim
         const startDateTime = new Date(`${validatedData.data}T${validatedData.horaInicio}:00`);
+        // Validação extra: horário de término não pode ser maior que 18:00
         const endDateTime = new Date(`${validatedData.data}T${validatedData.horaFim}:00`);
+        if (endDateTime.getHours() > 18 || (endDateTime.getHours() === 18 && endDateTime.getMinutes() > 0)) {
+            return NextResponse.json(
+                { error: "O horário de término da reserva deve ser até às 18:00." },
+                { status: 400 }
+            );
+        }
 
         // Validação extra: data e hora de início não pode ser menor que agora
         const now = new Date();
