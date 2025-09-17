@@ -36,9 +36,10 @@ describe('Initial Login tests', () => {
 
         //Act
         cy.get('[data-test="main-user-icon"]').click()
+        cy.screenshot('Logoff button')
+
         cy.get('[data-test="main-exit-button"').click()
 
-        cy.screenshot('Logoff button')
 
         //Arrange
         cy.url().should('eq', 'http://localhost:3000/login')
