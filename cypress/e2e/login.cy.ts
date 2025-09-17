@@ -9,6 +9,8 @@ describe('Initial Login tests', () => {
         //Arrange
         cy.url().should('eq', 'http://localhost:3000/')
 
+        cy.screenshot('Sucessful login')
+
     })
 
     it('Login with a unauthorized user', () => {
@@ -22,6 +24,8 @@ describe('Initial Login tests', () => {
         //Arrange
         cy.url().should('eq', 'http://localhost:3000/login')
         cy.get('[data-test="login-error-message"]').should('be.visible')
+
+        cy.screenshot('Login error')
     })
 
     it('User can Logoff', () => {
@@ -33,6 +37,8 @@ describe('Initial Login tests', () => {
         //Act
         cy.get('[data-test="main-user-icon"]').click()
         cy.get('[data-test="main-exit-button"').click()
+
+        cy.screenshot('Logoff button')
 
         //Arrange
         cy.url().should('eq', 'http://localhost:3000/login')
