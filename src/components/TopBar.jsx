@@ -49,9 +49,13 @@ const TopBar = () => {
               className="cursor-pointer hover:text-gray-200"
               onClick={handleUserClick}
               title="Menu do usuário"
+              data-test="main-user-icon"
             />
             {showUserMenu && (
-              <div className="absolute right-0 top-full mt-2 bg-white text-black shadow-lg rounded-md border min-w-[120px] z-50">
+              <div
+                className="absolute right-0 top-full mt-2 bg-white text-black shadow-lg rounded-md border min-w-[120px] z-50"
+                data-test="main-exit-button"
+              >
                 <button
                   onClick={handleLogout}
                   className="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center gap-2 rounded-md"
