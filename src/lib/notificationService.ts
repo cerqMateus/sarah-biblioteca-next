@@ -54,6 +54,7 @@ export async function createReservationNotifications(reservationId: number, user
                 reservationId,
                 title,
                 message,
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 type: type as any,
             },
         });

@@ -39,7 +39,7 @@ const ReservaDetailsDialog = ({
   const [showDeleteAlert, setShowDeleteAlert] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const { deleteReserva, updateReserva } = useReservas();
+  const { deleteReserva } = useReservas();
 
   // Função simples de notificação (substitui useToast temporariamente)
   const showNotification = (message: string, type: "success" | "error") => {
@@ -70,7 +70,8 @@ const ReservaDetailsDialog = ({
   // Inicializar descrição quando o dialog abrir
   const handleOpenChange = (newOpen: boolean) => {
     if (newOpen && reserva) {
-      setEditedDescription(reserva.description || "");
+      // Description feature removed - setEditedDescription(reserva.description || "");
+      setEditedDescription("");
     }
     if (!newOpen) {
       setIsEditing(false);
@@ -80,14 +81,19 @@ const ReservaDetailsDialog = ({
   };
 
   // Salvar descrição editada
+  // Note: Update functionality is not implemented yet
   const handleSaveDescription = async () => {
     if (!reserva) return;
 
     setLoading(true);
     try {
-      await updateReserva(reserva.id, { description: editedDescription });
+      // TODO: Implement updateReserva in useReservas hook
+      // await updateReserva(reserva.id, { description: editedDescription });
       setIsEditing(false);
-      showNotification("Descrição atualizada com sucesso!", "success");
+      showNotification(
+        "Funcionalidade de atualização não implementada",
+        "error"
+      );
     } catch (error) {
       console.error("Erro ao atualizar descrição:", error);
       showNotification(
@@ -105,7 +111,7 @@ const ReservaDetailsDialog = ({
 
     setLoading(true);
     try {
-      await deleteReserva(reserva.id);
+      await deleteReserva(String(reserva.id));
       setShowDeleteAlert(false);
       onOpenChange(false);
       showNotification("Reserva deletada com sucesso!", "success");
@@ -279,7 +285,7 @@ const ReservaDetailsDialog = ({
                       size="sm"
                       onClick={() => {
                         setIsEditing(false);
-                        setEditedDescription(reserva.description || "");
+                        setEditedDescription("");
                       }}
                     >
                       Cancelar
@@ -289,7 +295,7 @@ const ReservaDetailsDialog = ({
               ) : (
                 <div className="bg-gray-50 rounded-lg p-4 min-h-[80px] flex items-center">
                   <p className="text-gray-700 whitespace-pre-wrap">
-                    {reserva.description || "Nenhuma descrição adicionada."}
+                    Nenhuma descrição adicionada.
                   </p>
                 </div>
               )}

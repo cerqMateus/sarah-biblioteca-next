@@ -5,10 +5,11 @@ const prisma = new PrismaClient();
 
 export async function GET(
     request: NextRequest,
-    { params }: { params: { matricula: string } }
+    { params }: { params: Promise<{ matricula: string }> }
 ) {
     try {
-        const matricula = parseInt(params.matricula);
+        const { matricula: matriculaStr } = await params;
+        const matricula = parseInt(matriculaStr);
 
         if (isNaN(matricula)) {
             return NextResponse.json(

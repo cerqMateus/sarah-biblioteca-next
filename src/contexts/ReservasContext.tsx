@@ -1,14 +1,24 @@
 "use client";
 
 import { createContext, useContext, useCallback, ReactNode } from "react";
-import { useReservas } from "@/hooks/useReservas";
+import { useReservas, Reserva } from "@/hooks/useReservas";
 import { useAuth } from "@/contexts/AuthContext";
 
+interface CreateReservaData {
+  nome?: string;
+  matricula: string;
+  ramal?: string;
+  local: string;
+  data: string;
+  horaInicio: string;
+  horaFim: string;
+}
+
 interface ReservasContextType {
-  reservas: any[];
+  reservas: Reserva[];
   loading: boolean;
   error: string | null;
-  createReserva: (data: any) => Promise<any>;
+  createReserva: (data: CreateReservaData) => Promise<Reserva>;
   deleteReserva: (id: string) => Promise<void>;
   refreshReservas: () => Promise<void>;
 }
@@ -26,7 +36,7 @@ export function ReservasProvider({ children }: { children: ReactNode }) {
   }, [reservasHook]);
 
   const createReserva = useCallback(
-    async (data: any) => {
+    async (data: CreateReservaData) => {
       const result = await reservasHook.createReserva(data);
       // O hook já recarrega os dados automaticamente
       return result;

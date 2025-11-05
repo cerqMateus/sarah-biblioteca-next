@@ -106,6 +106,7 @@ export function useReservas(matricula?: number) {
 
     useEffect(() => {
         fetchReservas();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     return {

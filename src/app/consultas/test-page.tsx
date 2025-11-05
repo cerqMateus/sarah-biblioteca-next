@@ -2,9 +2,29 @@
 
 import { useState, useEffect } from "react";
 
+interface Sala {
+  id: number;
+  name: string;
+  capacity: number;
+}
+
+interface Reserva {
+  id: number;
+  startDateTime: string;
+  endDateTime: string;
+  user: {
+    name: string;
+    matricula: number;
+    ramal: string;
+  };
+  room: {
+    name: string;
+  };
+}
+
 export default function TestConsultasPage() {
-  const [salas, setSalas] = useState([]);
-  const [reservas, setReservas] = useState([]);
+  const [salas, setSalas] = useState<Sala[]>([]);
+  const [reservas, setReservas] = useState<Reserva[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -41,7 +61,7 @@ export default function TestConsultasPage() {
       <div className="mb-4">
         <h2 className="text-lg font-semibold mb-2">Salas disponíveis:</h2>
         <div className="space-y-2">
-          {salas.map((sala: any) => (
+          {salas.map((sala) => (
             <button
               key={sala.id}
               onClick={() => buscarReservas(sala.name)}
@@ -58,7 +78,7 @@ export default function TestConsultasPage() {
           Reservas {loading && "(Carregando...)"}:
         </h2>
         <div className="space-y-2">
-          {reservas.map((reserva: any) => (
+          {reservas.map((reserva) => (
             <div key={reserva.id} className="p-4 bg-gray-100 rounded">
               <h3 className="font-semibold">{reserva.user.name}</h3>
               <p>Matrícula: {reserva.user.matricula}</p>

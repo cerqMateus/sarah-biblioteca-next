@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { PrismaClient } from '@/generated/prisma';
 
 const prisma = new PrismaClient();
 
-export async function POST(request: NextRequest) {
+export async function POST() {
     try {
         const now = new Date();
 
@@ -73,6 +73,6 @@ export async function POST(request: NextRequest) {
 }
 
 // Função para ser chamada automaticamente
-export async function GET(request: NextRequest) {
-    return POST(request);
+export async function GET() {
+    return POST();
 }

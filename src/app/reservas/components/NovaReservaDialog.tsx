@@ -79,7 +79,7 @@ const NovaReservaDialog = () => {
   const getEndTimeOptions = () => {
     // Filtrar para horários até 18:00
     const maxEndTime = "18:00";
-    let filteredOptions = timeOptions.filter((time) => time <= maxEndTime);
+    const filteredOptions = timeOptions.filter((time) => time <= maxEndTime);
     if (!form.horaInicio) return filteredOptions;
 
     const startTimeIndex = filteredOptions.indexOf(form.horaInicio);

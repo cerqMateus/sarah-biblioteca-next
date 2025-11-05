@@ -167,7 +167,8 @@ export async function GET(request: NextRequest) {
         const { searchParams } = new URL(request.url);
         const matricula = searchParams.get('matricula');
 
-        let whereClause: any = {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const whereClause: any = {
             status: 'ACTIVE' // Apenas reservas ativas
         };
 

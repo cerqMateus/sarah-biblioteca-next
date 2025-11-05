@@ -75,7 +75,8 @@ const MinhasReservas = () => {
             Você ainda não possui reservas
           </div>
           <div className="text-gray-400 text-sm">
-            Use o botão "Criar nova reserva" para fazer sua primeira reserva
+            Use o botão &quot;Criar nova reserva&quot; para fazer sua primeira
+            reserva
           </div>
         </div>
       ) : (
