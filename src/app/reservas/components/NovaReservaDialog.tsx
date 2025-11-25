@@ -194,12 +194,14 @@ const NovaReservaDialog = () => {
       return;
     }
 
-    // Validação de data não pode ser anterior a hoje
-    const hoje = new Date();
-    const hojeStr = hoje.toISOString().split("T")[0]; // Formato YYYY-MM-DD
+    // Validação de data e hora não pode ser anterior ao momento atual
+    const agora = new Date();
+    const dataHoraReserva = new Date(`${form.data}T${form.horaInicio}:00`);
 
-    if (form.data < hojeStr) {
-      setErrors({ data: "Data da reserva não pode ser anterior a hoje" });
+    if (dataHoraReserva < agora) {
+      setErrors({
+        data: "Não é possível fazer reserva para data/hora anterior ao momento atual",
+      });
       setLoading(false);
       return;
     }
